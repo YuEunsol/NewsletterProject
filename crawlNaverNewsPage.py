@@ -41,9 +41,9 @@ def crawlNews(driver):
             print(contents)
             print(link)
 
-            news_dict = {"title" : title,
-                         "press" : press,
+            news_dict = {"press" : press,
                          "upload time" : upload_time,
+                         "title" : title,
                          "contents" : contents,
                          "link" : link}
 
@@ -117,8 +117,8 @@ def findLink(driver, news_box_id):
     return link
 
 
-driver = setInitialDriver()
-url = setUrl("현대 엔지니어링")
-driver.get(url)
-time.sleep(1)
-news_list = crawlNews(driver)
+# driver = setInitialDriver()
+# url = setUrl("현대 엔지니어링")
+# driver.get(url)
+# time.sleep(1)
+# news_list = crawlNews(driver)
