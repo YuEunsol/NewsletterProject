@@ -1,11 +1,16 @@
-import datetime
-
 from config import *
 
+from urllib import parse
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 def setInitialDriver():
     chrome_options = Options()
-    chrome_options.add_argument('headless')
+    # chrome_options.add_argument('headless')
     chrome_options.add_argument("--start-maximized")
     # chrome_options.add_experimental_option("detach", True)
     driver = webdriver.Chrome(service= Service(ChromeDriverManager().install()), options=chrome_options)
@@ -20,44 +25,83 @@ def setUrl(keyword):
 
     return url
 
+# 페이지 별로 크롤링
+# def crawlNews(driver):
+#     news_list = []
+#     while True:
+#         # 뉴스 리스트
+#         news_box_list = driver.find_elements(By.CSS_SELECTOR, '#main_pack > section > div > div.group_news > ul > li')
+#
+#         for news_box in news_box_list:
+#             news_box_id = news_box.get_attribute("id")
+#
+#             press = findPress(driver, news_box_id)
+#             upload_time = findUploadTime(driver, news_box_id)
+#             title = findNewsTitle(driver, news_box_id)
+#             contents = findContents(driver, news_box_id)
+#             link = findLink(driver, news_box_id)
+#
+#             print(title)
+#             print(press)
+#             print(upload_time)
+#             print(contents)
+#             print(link)
+#
+#             news_dict = {"press" : press,
+#                          "upload time" : upload_time,
+#                          "title" : title,
+#                          "contents" : contents,
+#                          "link" : link}
+#
+#             news_list.append(news_dict)
+#
+#         next_button = driver.find_element(By.XPATH, '//*[@id="main_pack"]/div[2]/div/a[2]')
+#         next_button_clickable = True if next_button.get_attribute("aria-disabled") == "false" else False
+#
+#         if next_button_clickable is True:
+#             next_button.click()
+#         else:
+#             pprint.pprint(news_list)
+#             print(f"뉴스가 총 {len(news_list)}개 스크랩 되었습니다.")
+#             return news_list
+
+# 무한 스크롤 크롤링
 def crawlNews(driver):
     news_list = []
     while True:
-        # 뉴스 리스트
-        news_box_list = driver.find_elements(By.CSS_SELECTOR, '#main_pack > section > div > div.group_news > ul > li')
+        body = driver.find_element(By.CSS_SELECTOR, 'body')
+        body.send_keys(Keys.END)
+        time.sleep(1)
 
-        for news_box in news_box_list:
-            news_box_id = news_box.get_attribute("id")
+        infinite_trigger = driver.find_element(By.CLASS_NAME, '_infinite_trigger').get_attribute("data-api")
+        if infinite_trigger == "":
+            break
 
-            press = findPress(driver, news_box_id)
-            upload_time = findUploadTime(driver, news_box_id)
-            title = findNewsTitle(driver, news_box_id)
-            contents = findContents(driver, news_box_id)
-            link = findLink(driver, news_box_id)
+    # 뉴스 리스트
+    news_box_list = driver.find_elements(By.CSS_SELECTOR,
+                                         '#main_pack > section > div > div.group_news > ul > li')
 
-            print(title)
-            print(press)
-            print(upload_time)
-            print(contents)
-            print(link)
+    for news_box in news_box_list:
+        news_box_id = news_box.get_attribute("id")
 
-            news_dict = {"press" : press,
-                         "upload time" : upload_time,
-                         "title" : title,
-                         "contents" : contents,
-                         "link" : link}
+        press = findPress(driver, news_box_id)
+        upload_time = findUploadTime(driver, news_box_id)
+        title = findNewsTitle(driver, news_box_id)
+        contents = findContents(driver, news_box_id)
+        link = findLink(driver, news_box_id)
 
-            news_list.append(news_dict)
+        news_dict = {"press": press,
+                     "upload time": upload_time,
+                     "title": title,
+                     "contents": contents,
+                     "link": link}
 
-        next_button = driver.find_element(By.XPATH, '//*[@id="main_pack"]/div[2]/div/a[2]')
-        next_button_clickable = True if next_button.get_attribute("aria-disabled") == "false" else False
+        news_list.append(news_dict)
 
-        if next_button_clickable is True:
-            next_button.click()
-        else:
-            pprint.pprint(news_list)
-            print(f"뉴스가 총 {len(news_list)}개 스크랩 되었습니다.")
-            return news_list
+    news_list = list({frozenset(data.items()): data for data in news_list}.values())
+    pprint.pprint(news_list)
+    print(f"뉴스가 총 {len(news_list)}개 스크랩 되었습니다.")
+    return news_list
 
 
 def findPress(driver, news_box_id):

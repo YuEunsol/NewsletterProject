@@ -1,5 +1,9 @@
 from config import *
 
+from openpyxl import Workbook
+from string import ascii_uppercase
+from openpyxl.styles import Font, Border, Side, Alignment, named_styles, Color, PatternFill
+
 def createXl(keyword, news_list):
     wb = Workbook()
     createNewsTitleFont(wb)
@@ -47,8 +51,13 @@ def createXl(keyword, news_list):
             ws[cell_number] = each
 
 
-    save_path = f"{xl_path}/{keyword}_{today}.xlsx"
-    wb.save(save_path)
+    try:
+        save_path = f"{win_xl_path}/{keyword}_{today}.xlsx"
+        wb.save(save_path)
+    except:
+        save_path = f"{mac_xl_path}/{keyword}_{today}.xlsx"
+        wb.save(save_path)
+
     print(f"{save_path}에 저장 했습니다.")
 
 
